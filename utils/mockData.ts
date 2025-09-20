@@ -1,4 +1,4 @@
-import { DatasetTemplate, LLMModel } from '@/types';
+import { DatasetTemplate, LLMModel, Dataset } from '@/types';
 
 export const templates: Record<string, DatasetTemplate[]> = {
   tabular: [
@@ -111,5 +111,120 @@ export const llmModels: LLMModel[] = [
     icon: '🦙',
     pricing: '0.001 FIL per 1K tokens',
     bestFor: ['text', 'tabular']
+  }
+];
+
+export const mockDatasets: Dataset[] = [
+  {
+    id: '1',
+    name: 'E-commerce Customer Analytics',
+    description: 'Comprehensive customer behavior dataset with purchase history, demographics, and engagement metrics for machine learning models.',
+    type: 'tabular',
+    size: 50000,
+    price: 2.5,
+    author: '0x1234...5678',
+    createdAt: '2024-01-15',
+    tags: ['ecommerce', 'analytics', 'customer-behavior', 'ml'],
+    downloads: 234,
+    rating: 4.8,
+    views: 1200
+  },
+  {
+    id: '2',
+    name: 'Financial Market Sentiment',
+    description: 'Real-time sentiment analysis data from social media and news sources for financial market prediction models.',
+    type: 'text',
+    size: 100000,
+    price: 5.0,
+    author: '0x9876...4321',
+    createdAt: '2024-01-12',
+    tags: ['finance', 'sentiment', 'nlp', 'trading'],
+    downloads: 189,
+    rating: 4.6,
+    views: 890
+  },
+  {
+    id: '3',
+    name: 'IoT Sensor Network Data',
+    description: 'Multi-sensor time-series data from industrial IoT devices including temperature, pressure, and vibration readings.',
+    type: 'time-series',
+    size: 250000,
+    price: 8.0,
+    author: '0x4567...8901',
+    createdAt: '2024-01-10',
+    tags: ['iot', 'sensors', 'industrial', 'time-series'],
+    downloads: 156,
+    rating: 4.9,
+    views: 750
+  },
+  {
+    id: '4',
+    name: 'Medical Image Classification',
+    description: 'Synthetic medical imaging dataset with X-ray and MRI scans for computer vision and diagnostic AI training.',
+    type: 'images',
+    size: 15000,
+    price: 12.0,
+    author: '0x2468...1357',
+    createdAt: '2024-01-08',
+    tags: ['medical', 'imaging', 'ai', 'healthcare'],
+    downloads: 98,
+    rating: 4.7,
+    views: 450
+  },
+  {
+    id: '5',
+    name: 'Social Media Engagement Metrics',
+    description: 'Comprehensive social media performance data across multiple platforms with engagement rates and viral content patterns.',
+    type: 'tabular',
+    size: 75000,
+    price: 3.5,
+    author: '0x1357...2468',
+    createdAt: '2024-01-05',
+    tags: ['social-media', 'engagement', 'marketing', 'analytics'],
+    downloads: 312,
+    rating: 4.5,
+    views: 1100
+  },
+  {
+    id: '6',
+    name: 'Product Review Sentiment',
+    description: 'Large-scale product review dataset with sentiment labels and rating predictions for e-commerce recommendation systems.',
+    type: 'text',
+    size: 200000,
+    price: 6.5,
+    author: '0x8642...9753',
+    createdAt: '2024-01-03',
+    tags: ['reviews', 'sentiment', 'ecommerce', 'recommendations'],
+    downloads: 267,
+    rating: 4.8,
+    views: 950
+  },
+  {
+    id: '7',
+    name: 'Stock Price Prediction Data',
+    description: 'Historical stock market data with technical indicators and news sentiment for algorithmic trading models.',
+    type: 'time-series',
+    size: 300000,
+    price: 10.0,
+    author: '0x9753...8642',
+    createdAt: '2024-01-01',
+    tags: ['stocks', 'trading', 'finance', 'prediction'],
+    downloads: 145,
+    rating: 4.9,
+    views: 680
+  },
+  {
+    id: '8',
+    name: 'Autonomous Vehicle Training',
+    description: 'Synthetic driving scenario dataset with street images, traffic signs, and pedestrian detection for self-driving car AI.',
+    type: 'images',
+    size: 50000,
+    price: 15.0,
+    author: '0x7531...8642',
+    createdAt: '2023-12-28',
+    tags: ['autonomous', 'vehicles', 'computer-vision', 'safety'],
+    downloads: 78,
+    rating: 4.6,
+    views: 320
   }
 ];

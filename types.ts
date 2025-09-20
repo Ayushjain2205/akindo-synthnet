@@ -145,6 +145,22 @@ export interface StorageCosts {
 // Dataset generation types
 export type DatasetType = 'tabular' | 'text' | 'time-series' | 'images';
 
+// Marketplace dataset interface
+export interface Dataset {
+  id: string;
+  name: string;
+  description: string;
+  type: DatasetType;
+  size: number;
+  price?: number;
+  author: string;
+  createdAt: string;
+  tags: string[];
+  downloads?: number;
+  rating?: number;
+  views?: number;
+}
+
 export interface GenerationRequest {
   type: DatasetType;
   prompt: string;

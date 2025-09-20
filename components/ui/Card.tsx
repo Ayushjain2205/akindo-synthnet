@@ -3,6 +3,7 @@ import { cn } from '@/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  hover?: boolean;
 }
 
 interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -13,11 +14,12 @@ interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({ className, children, ...props }) => {
+export const Card: React.FC<CardProps> = ({ className, children, hover, ...props }) => {
   return (
     <div
       className={cn(
         'bg-white rounded-xl border border-gray-200 shadow-sm',
+        hover && 'hover:shadow-lg hover:border-teal-200 transition-all duration-200',
         className
       )}
       {...props}
