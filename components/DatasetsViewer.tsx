@@ -1,6 +1,7 @@
-// components/ViewProofSets.tsx
+// components/DatasetsViewer.tsx
 "use client";
 
+import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useDatasets } from "@/hooks/useDatasets";
 import { useDownloadPiece } from "@/hooks/useDownloadPiece";
@@ -16,123 +17,38 @@ export const DatasetsViewer = () => {
   }
 
   return (
-    <div className="mt-4 p-6 border rounded-lg bg-white shadow-sm max-h-[900px] overflow-y-auto">
-      <div className="flex justify-between items-center pb-4 border-b">
-        <div className="sticky top-0 bg-white z-10">
+    <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+        <div>
           <h3 className="text-xl font-semibold text-gray-900">Datasets</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            View and manage your storage datasets
-          </p>
         </div>
       </div>
 
       {isLoadingDatasets ? (
         <div className="flex justify-center items-center py-8">
-          <p className="text-gray-500">Loading datasets...</p>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+            <p className="text-gray-500">Loading datasets...</p>
+          </div>
         </div>
       ) : data && data.datasets && data.datasets.length > 0 ? (
-        <div className="mt-4 space-y-6">
+        <div className="mt-6 space-y-4">
           {data.datasets.map(
             (dataset: DataSet | undefined) =>
               dataset && (
-                <div
-                  key={dataset.clientDataSetId}
-                  className="bg-gray-50 rounded-lg p-4 border border-gray-200"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-900">
-                        Dataset #{dataset.pdpVerifierDataSetId}
-                      </h4>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Status:{" "}
-                        <span
-                          className={`font-medium ${
-                            dataset.isLive ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          {dataset.isLive ? "Live" : "Inactive"}
-                        </span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        With CDN:{" "}
-                        <span className={`font-medium `}>
-                          {dataset.withCDN ? "⚡ Yes ⚡" : "No"}
-                        </span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        PDP URL:{" "}
-                        <span
-                          className="cursor-pointer"
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              dataset.provider?.products.PDP?.data.serviceURL ||
-                                ""
-                            );
-                            window.alert("PDP URL copied to clipboard");
-                          }}
-                        >
-                          {dataset.provider?.products.PDP?.data.serviceURL}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">
-                        Commission: {dataset.commissionBps / 100}%
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Managed: {dataset.isManaged ? "Yes" : "No"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <h5 className="text-sm font-medium text-gray-900 mb-2">
-                      Piece Details
-                    </h5>
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Current Piece Count
-                          </p>
-                          <p className="font-medium">
-                            {dataset.currentPieceCount}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Next Piece ID</p>
-                          <p className="font-medium">{dataset.nextPieceId}</p>
-                        </div>
-                      </div>
-
-                      {dataset.data?.pieces && (
-                        <div className="mt-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h6 className="text-sm font-medium text-gray-900">
-                              Available Pieces
-                            </h6>
-                            <p className="text-sm text-gray-500">
-                              Next Challenge: Epoch{" "}
-                              {dataset.data.nextChallengeEpoch}
-                            </p>
-                          </div>
-                          <div className="space-y-2">
-                            {dataset.data.pieces.map((piece) => (
-                              <PieceDetails key={piece.pieceId} piece={piece} />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <DatasetCard key={dataset.clientDataSetId} dataset={dataset} />
               )
           )}
         </div>
       ) : (
-        <div className="flex justify-center items-center py-8">
-          <p className="text-gray-500">No datasets found</p>
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <div className="text-4xl mb-2">📦</div>
+            <p className="text-gray-500">No datasets found</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Upload files to create your first dataset
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -140,34 +56,184 @@ export const DatasetsViewer = () => {
 };
 
 /**
- * Component to display a piece and a download button
+ * Minimal dataset card component
  */
-const PieceDetails = ({ piece }: { piece: DataSetPieceData }) => {
-  const filename = `piece-${piece.pieceCid}.png`;
+const DatasetCard = ({ dataset }: { dataset: DataSet }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow bg-white">
+      {/* Dataset Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <span className="text-sm font-bold text-blue-600">
+              {dataset.pdpVerifierDataSetId}
+            </span>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900">
+              Dataset #{dataset.pdpVerifierDataSetId}
+            </h4>
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <StatusBadge isLive={dataset.isLive} />
+              <span>{dataset.currentPieceCount} pieces</span>
+              {dataset.withCDN && (
+                <span className="text-green-600">⚡ CDN</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            {isExpanded ? "Hide" : "Show"} Details
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+          {/* Quick Stats */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <span className="text-gray-500">Commission:</span>
+              <span className="font-medium">
+                {dataset.commissionBps / 100}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-gray-500">Managed:</span>
+              <span className="font-medium">
+                {dataset.isManaged ? "Yes" : "No"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-gray-500">Next ID:</span>
+              <span className="font-medium">{dataset.nextPieceId}</span>
+            </div>
+            {dataset.data?.nextChallengeEpoch && (
+              <div className="flex items-center gap-1">
+                <span className="text-gray-500">Next Challenge:</span>
+                <span className="font-medium">
+                  Epoch {dataset.data.nextChallengeEpoch}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* PDP URL */}
+          {dataset.provider?.products.PDP?.data.serviceURL && (
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">PDP URL:</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      dataset.provider?.products.PDP?.data.serviceURL || ""
+                    );
+                    // Simple feedback without alert
+                    const btn = event?.target as HTMLButtonElement;
+                    const originalText = btn.textContent;
+                    btn.textContent = "Copied!";
+                    setTimeout(() => (btn.textContent = originalText), 1000);
+                  }}
+                  className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 font-mono truncate">
+                {dataset.provider.products.PDP.data.serviceURL}
+              </p>
+            </div>
+          )}
+
+          {/* Pieces */}
+          {dataset.data?.pieces && dataset.data.pieces.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-gray-900 mb-2">
+                Available Pieces ({dataset.data.pieces.length})
+              </h5>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {dataset.data.pieces.map((piece) => (
+                  <PieceCard key={piece.pieceId} piece={piece} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Status badge component
+ */
+const StatusBadge = ({ isLive }: { isLive: boolean }) => (
+  <div
+    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+      isLive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+    }`}
+  >
+    <div
+      className={`w-1.5 h-1.5 rounded-full ${
+        isLive ? "bg-green-500" : "bg-red-500"
+      }`}
+    />
+    {isLive ? "Live" : "Inactive"}
+  </div>
+);
+
+/**
+ * Minimal piece card component
+ */
+const PieceCard = ({ piece }: { piece: DataSetPieceData }) => {
   const { downloadMutation } = useDownloadPiece(
     piece.pieceCid.toString(),
-    filename
+    `piece-${piece.pieceCid}.png`
   );
 
   return (
-    <div
-      key={piece.pieceId.toString()}
-      className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200"
-    >
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900">
-          Piece #{piece.pieceId}
-        </p>
-        <p className="text-xs text-gray-500 truncate">
-          {piece.pieceCid.toString()}
-        </p>
+    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-bold text-blue-600">
+            {piece.pieceId}
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            Piece #{piece.pieceId}
+          </p>
+          <p className="text-xs text-gray-500 truncate font-mono">
+            {piece.pieceCid.toString().slice(0, 20)}...
+          </p>
+        </div>
       </div>
+
       <button
         onClick={() => downloadMutation.mutate()}
         disabled={downloadMutation.isPending}
-        className="ml-4 px-3 py-1 text-sm rounded-lg border-2 border-black cursor-pointer transition-all bg-black text-white hover:bg-white hover:text-black disabled:bg-gray-200 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+        className={`px-3 py-1 text-xs rounded-lg border transition-all flex-shrink-0 ${
+          downloadMutation.isPending
+            ? "bg-gray-200 border-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-white border-black text-black hover:bg-black hover:text-white"
+        }`}
       >
-        {downloadMutation.isPending ? "Downloading..." : "Download"}
+        {downloadMutation.isPending ? (
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+            <span>Downloading...</span>
+          </div>
+        ) : (
+          "Download"
+        )}
       </button>
     </div>
   );

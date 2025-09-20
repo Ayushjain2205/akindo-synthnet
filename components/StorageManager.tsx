@@ -1,4 +1,4 @@
-// components/TokenPayment.tsx
+// components/StorageManager.tsx
 "use client";
 
 import { useAccount } from "wagmi";
@@ -10,9 +10,10 @@ import { AllowanceItemProps, PaymentActionProps, SectionProps } from "@/types";
 
 /**
  * Component to display and manage token payments for storage
+ * Optimized with compact single-column redesign strategy
  */
 export const StorageManager = () => {
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
   const {
     data,
     isLoading: isBalanceLoading,
@@ -32,21 +33,93 @@ export const StorageManager = () => {
   }
 
   return (
-    <div className="p-6 border rounded-lg bg-white shadow-sm">
+    <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
       <StorageBalanceHeader />
-      <div className="mt-4 space-y-4">
-        <WalletBalancesSection
-          balances={balances}
-          isLoading={isBalanceLoading}
-        />
-        <StorageStatusSection
-          balances={balances}
-          isLoading={isBalanceLoading}
-        />
-        <AllowanceStatusSection
-          balances={balances}
-          isLoading={isBalanceLoading}
-        />
+
+      {/* Compact Single-Column Layout */}
+      <div className="mt-6 space-y-4">
+        {/* Balances in pill style */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-900">Wallet Balances</h4>
+          <div className="flex flex-wrap gap-2">
+            <BalancePill
+              icon="💰"
+              label="FIL"
+              value={balances?.filBalanceFormatted?.toLocaleString() || "..."}
+              isLoading={isBalanceLoading}
+            />
+            <BalancePill
+              icon="💵"
+              label="USDFC"
+              value={balances?.usdfcBalanceFormatted?.toLocaleString() || "..."}
+              isLoading={isBalanceLoading}
+            />
+            <BalancePill
+              icon="🔥"
+              label="Warm"
+              value={
+                balances?.warmStorageBalanceFormatted?.toLocaleString() || "..."
+              }
+              isLoading={isBalanceLoading}
+            />
+            <BalancePill
+              icon="📦"
+              label="Allowance"
+              value={`${
+                balances?.currentRateAllowanceGB?.toLocaleString() || "..."
+              }GB`}
+              isLoading={isBalanceLoading}
+            />
+          </div>
+        </div>
+
+        {/* Storage Usage as progress bar */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-900">Storage Usage</h4>
+          <StorageProgressBar
+            current={balances?.currentStorageGB || 0}
+            max={balances?.currentRateAllowanceGB || 0}
+            isLoading={isBalanceLoading}
+          />
+
+          {/* Persistence Days as small subtext */}
+          <div className="flex text-xs text-gray-600 gap-4">
+            <span>
+              ⏳ Max rate:{" "}
+              {isBalanceLoading
+                ? "..."
+                : `${balances?.persistenceDaysLeft?.toFixed(1) || 0} days`}
+            </span>
+            <span>
+              Current rate:{" "}
+              {isBalanceLoading
+                ? "..."
+                : `${
+                    balances?.persistenceDaysLeftAtCurrentRate?.toLocaleString() ||
+                    0
+                  } days`}
+            </span>
+          </div>
+        </div>
+
+        {/* Allowances as inline checkboxes */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-900">Allowances</h4>
+          <div className="flex gap-4">
+            <AllowanceCheckbox
+              label="Rate"
+              isSufficient={balances?.isRateSufficient}
+              isLoading={isBalanceLoading}
+            />
+            <AllowanceCheckbox
+              label="Lockup"
+              isSufficient={balances?.isLockupSufficient}
+              isLoading={isBalanceLoading}
+            />
+          </div>
+        </div>
+
+        {/* Action buttons */}
         <ActionSection
           balances={balances}
           isLoading={isBalanceLoading}
@@ -54,16 +127,133 @@ export const StorageManager = () => {
           onPayment={handlePayment}
           handleRefetchBalances={handleRefetchBalances}
         />
-        <div
-          className={`mt-4 p-3 rounded-lg ${status ? "block" : "hidden"} ${
-            status.includes("❌")
-              ? "bg-red-50 border border-red-200 text-red-800"
-              : status.includes("✅")
-              ? "bg-green-50 border border-green-200 text-green-800"
-              : "bg-blue-50 border border-blue-200 text-blue-800"
-          }`}
-        >
-          {status}
+
+        {/* Status as small badge */}
+        {status && (
+          <div
+            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+              status.includes("❌")
+                ? "bg-red-100 text-red-800 border border-red-200"
+                : status.includes("✅")
+                ? "bg-green-100 text-green-800 border border-green-200"
+                : "bg-blue-100 text-blue-800 border border-blue-200"
+            }`}
+          >
+            {status}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Compact balance pill component
+ */
+const BalancePill = ({
+  icon,
+  label,
+  value,
+  isLoading,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  isLoading: boolean;
+}) => (
+  <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+    <span>{icon}</span>
+    <span className="font-medium text-gray-700">{label}:</span>
+    <span className="font-semibold text-gray-900">{value}</span>
+  </div>
+);
+
+/**
+ * Storage progress bar component with modern themed design
+ */
+const StorageProgressBar = ({
+  current,
+  max,
+  isLoading,
+}: {
+  current: number;
+  max: number;
+  isLoading: boolean;
+}) => {
+  const availablePercentage =
+    max > 0 ? Math.min((current / max) * 100, 100) : 0;
+  const isLowAvailability = availablePercentage <= 20; // Less than 20% available
+  const isCriticalAvailability = availablePercentage <= 5; // Less than 5% available
+
+  return (
+    <div className="space-y-2">
+      {/* Progress Bar Container */}
+      <div className="relative">
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ease-out ${
+              isCriticalAvailability
+                ? "bg-gradient-to-r from-red-500 to-red-600"
+                : isLowAvailability
+                ? "bg-gradient-to-r from-yellow-400 to-orange-500"
+                : "bg-gradient-to-r from-green-500 to-green-600"
+            }`}
+            style={{ width: `${availablePercentage}%` }}
+          >
+            {/* Shine effect */}
+            <div className="h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+          </div>
+        </div>
+
+        {/* Percentage indicator */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className={`text-xs font-bold ${
+              isCriticalAvailability
+                ? "text-red-700"
+                : isLowAvailability
+                ? "text-orange-700"
+                : "text-green-700"
+            }`}
+          >
+            {isLoading ? "..." : `${availablePercentage.toFixed(1)}%`}
+          </span>
+        </div>
+      </div>
+
+      {/* Storage info */}
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-gray-700">
+          {isLoading
+            ? "Loading storage info..."
+            : `${current.toLocaleString()}GB available / ${max.toLocaleString()}GB total`}
+        </span>
+        <div className="flex items-center gap-2">
+          {/* Status indicator */}
+          <div
+            className={`w-2 h-2 rounded-full ${
+              isCriticalAvailability
+                ? "bg-red-500 animate-pulse"
+                : isLowAvailability
+                ? "bg-yellow-500"
+                : "bg-green-500"
+            }`}
+          />
+          <span
+            className={`text-xs font-medium ${
+              isCriticalAvailability
+                ? "text-red-600"
+                : isLowAvailability
+                ? "text-yellow-600"
+                : "text-green-600"
+            }`}
+          >
+            {isCriticalAvailability
+              ? "Critical"
+              : isLowAvailability
+              ? "Low Available"
+              : "Plenty Available"}
+          </span>
         </div>
       </div>
     </div>
@@ -71,61 +261,65 @@ export const StorageManager = () => {
 };
 
 /**
- * Section displaying allowance status
+ * Inline allowance checkbox component
  */
-const AllowanceStatusSection = ({ balances, isLoading }: SectionProps) => {
-  const depositNeededFormatted = Number(
-    formatUnits(balances?.depositNeeded ?? 0n, 18)
-  ).toFixed(3);
+const AllowanceCheckbox = ({
+  label,
+  isSufficient,
+  isLoading,
+}: {
+  label: string;
+  isSufficient?: boolean;
+  isLoading: boolean;
+}) => (
+  <div className="flex items-center gap-1 text-sm">
+    <span
+      className={`text-lg ${isSufficient ? "text-green-600" : "text-red-600"}`}
+    >
+      {isLoading ? "..." : isSufficient ? "✅" : "❌"}
+    </span>
+    <span className="font-medium text-gray-700">{label}</span>
+  </div>
+);
+
+/**
+ * Header section with title and USDFC faucet button
+ */
+const StorageBalanceHeader = () => {
+  const { chainId } = useAccount();
 
   return (
-    <div className="bg-gray-50 p-4 rounded-lg">
-      <h4 className="text-sm font-medium text-gray-900 mb-3">
-        Allowance Status
-      </h4>
-      <div className="space-y-3">
-        <AllowanceItem
-          label="Rate Allowance"
-          isSufficient={balances?.isRateSufficient}
-          isLoading={isLoading}
-        />
-        {!isLoading && !balances?.isRateSufficient && (
-          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <p className="text-yellow-800">
-              ⚠️ Max configured storage is {config.storageCapacity} GB. Your
-              current covered storage is{" "}
-              {balances?.currentRateAllowanceGB?.toLocaleString()} GB.
-            </p>
-            <p className="text-sm text-yellow-700 mt-2">
-              You are currently using{" "}
-              {balances?.currentStorageGB?.toLocaleString()} GB.
-            </p>
-          </div>
-        )}
-        <AllowanceItem
-          label="Lockup Allowance"
-          isSufficient={balances?.isLockupSufficient}
-          isLoading={isLoading}
-        />
-        {!isLoading && !balances?.isLockupSufficient && (
-          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <p className="text-yellow-800">
-              ⚠️ Max configured lockup is {config.persistencePeriod} days. Your
-              current covered lockup is{" "}
-              {balances?.persistenceDaysLeft.toFixed(1)} days. Which is less
-              than the notice period of {config.minDaysThreshold} days.
-            </p>
-            <p className="text-sm text-yellow-700 mt-2">
-              You are currently using{" "}
-              {balances?.currentStorageGB?.toLocaleString()} GB. Please deposit{" "}
-              {depositNeededFormatted} USDFC to extend your lockup for{" "}
-              {(
-                config.persistencePeriod - (balances?.persistenceDaysLeft ?? 0)
-              ).toFixed(1)}{" "}
-              more days.
-            </p>
-          </div>
-        )}
+    <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900">Storage Balance</h3>
+      </div>
+      <div
+        className={`flex items-center gap-2 ${
+          chainId === 314159 ? "block" : "hidden"
+        }`}
+      >
+        <button
+          className="px-4 py-2 text-sm h-9 flex items-center justify-center rounded-lg border-2 border-black transition-all bg-black text-white hover:bg-white hover:text-black"
+          onClick={() => {
+            window.open(
+              "https://forest-explorer.chainsafe.dev/faucet/calibnet_usdfc",
+              "_blank"
+            );
+          }}
+        >
+          Get tUSDFC
+        </button>
+        <button
+          className="px-4 py-2 text-sm h-9 flex items-center justify-center rounded-lg border-2 border-black transition-all bg-black text-white hover:bg-white hover:text-black"
+          onClick={() => {
+            window.open(
+              "https://faucet.calibnet.chainsafe-fil.io/funds.html",
+              "_blank"
+            );
+          }}
+        >
+          Get tFIL
+        </button>
       </div>
     </div>
   );
@@ -145,11 +339,9 @@ const ActionSection = ({
 
   if (balances.isSufficient) {
     return (
-      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-        <p className="text-green-800">
-          ✅ Your storage balance is sufficient for {config.storageCapacity}GB
-          of storage for {balances.persistenceDaysLeft.toFixed(1)} days.
-        </p>
+      <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium border border-green-200">
+        ✅ Sufficient for {config.storageCapacity}GB /{" "}
+        {balances.persistenceDaysLeft.toFixed(1)} days
       </div>
     );
   }
@@ -160,33 +352,23 @@ const ActionSection = ({
 
   if (balances.filBalance === 0n || balances.usdfcBalance === 0n) {
     return (
-      <div className="space-y-4">
-        <div
-          className={`p-4 bg-red-50 rounded-lg border border-red-200 ${
-            balances.filBalance === 0n ? "block" : "hidden"
-          }`}
-        >
-          <p className="text-red-800">
-            ⚠️ You need to FIL tokens to pay for transaction fees. Please
-            deposit FIL tokens to your wallet.
-          </p>
-        </div>
-        <div
-          className={`p-4 bg-red-50 rounded-lg border border-red-200 ${
-            balances.usdfcBalance === 0n ? "block" : "hidden"
-          }`}
-        >
-          <p className="text-red-800">
-            ⚠️ You need to USDFC tokens to pay for storage. Please deposit USDFC
-            tokens to your wallet.
-          </p>
-        </div>
+      <div className="space-y-2">
+        {balances.filBalance === 0n && (
+          <div className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium border border-red-200">
+            ⚠️ Need FIL for transaction fees
+          </div>
+        )}
+        {balances.usdfcBalance === 0n && (
+          <div className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium border border-red-200">
+            ⚠️ Need USDFC for storage
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {balances.isRateSufficient && !balances.isLockupSufficient && (
         <LockupIncreaseAction
           totalLockupNeeded={balances.totalLockupNeeded}
@@ -258,13 +440,8 @@ const LockupIncreaseAction = ({
 
   return (
     <>
-      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-        <p className="text-yellow-800">
-          ⚠️ Additional USDFC needed to meet your storage needs.
-        </p>
-        <p className="text-sm text-yellow-700 mt-2">
-          Deposit {depositNeededFormatted} USDFC to extend storage.
-        </p>
+      <div className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium border border-yellow-200">
+        ⚠️ Additional USDFC needed: {depositNeededFormatted}
       </div>
       <button
         onClick={async () => {
@@ -304,10 +481,8 @@ const RateIncreaseAction = ({
 
   return (
     <>
-      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-        <p className="text-yellow-800">
-          ⚠️ Increase your rate allowance to meet your storage needs.
-        </p>
+      <div className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium border border-yellow-200">
+        ⚠️ Increase rate allowance needed
       </div>
       <button
         onClick={async () => {
@@ -330,152 +505,3 @@ const RateIncreaseAction = ({
     </>
   );
 };
-
-/**
- * Header section with title and USDFC faucet button
- */
-const StorageBalanceHeader = () => {
-  const { chainId } = useAccount();
-
-  return (
-    <div className="flex justify-between items-center pb-4 border-b">
-      <div>
-        <h3 className="text-xl font-semibold text-gray-900">Storage Balance</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage your USDFC deposits for Filecoin storage
-        </p>
-      </div>
-      <div
-        className={`flex items-center gap-2 ${
-          chainId === 314159 ? "block" : "hidden"
-        }`}
-      >
-        <button
-          className="px-4 py-2 text-sm h-9 flex items-center justify-center rounded-lg border-2 border-black transition-all bg-black text-white hover:bg-white hover:text-black"
-          onClick={() => {
-            window.open(
-              "https://forest-explorer.chainsafe.dev/faucet/calibnet_usdfc",
-              "_blank"
-            );
-          }}
-        >
-          Get tUSDFC
-        </button>
-        <button
-          className="px-4 py-2 text-sm h-9 flex items-center justify-center rounded-lg border-2 border-black transition-all bg-black text-white hover:bg-white hover:text-black"
-          onClick={() => {
-            window.open(
-              "https://faucet.calibnet.chainsafe-fil.io/funds.html",
-              "_blank"
-            );
-          }}
-        >
-          Get tFIL
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Section displaying wallet balances
- */
-const WalletBalancesSection = ({ balances, isLoading }: SectionProps) => (
-  <div className="bg-gray-50 p-4 rounded-lg">
-    <h4 className="text-sm font-medium text-gray-900 mb-3">Wallet Balances</h4>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">FIL Balance</span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.filBalanceFormatted?.toLocaleString()} FIL`}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">USDFC Balance</span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.usdfcBalanceFormatted?.toLocaleString()} USDFC`}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">Warm Storage Balance</span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.warmStorageBalanceFormatted?.toLocaleString()} USDFC`}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">Rate Allowance</span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.currentRateAllowanceGB?.toLocaleString()} GB`}
-        </span>
-      </div>
-    </div>
-  </div>
-);
-
-/**
- * Section displaying storage status
- */
-const StorageStatusSection = ({ balances, isLoading }: SectionProps) => (
-  <div className="bg-gray-50 p-4 rounded-lg">
-    <h4 className="text-sm font-medium text-gray-900 mb-3">Storage Status</h4>
-    <div className="space-y-3">
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">Storage Usage</span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : ` ${balances?.currentStorageGB?.toLocaleString()} GB / ${balances?.currentRateAllowanceGB?.toLocaleString()} GB.`}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">
-          Persistence days left at max usage (max rate:{" "}
-          {balances?.currentRateAllowanceGB?.toLocaleString()} GB)
-        </span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.persistenceDaysLeft.toFixed(1)} days`}
-        </span>
-      </div>
-      <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-        <span className="text-sm text-gray-600">
-          Persistence days left at current usage (current rate:{" "}
-          {balances?.currentStorageGB?.toLocaleString()} GB)
-        </span>
-        <span className="font-medium text-gray-600">
-          {isLoading
-            ? "..."
-            : `${balances?.persistenceDaysLeftAtCurrentRate.toFixed(1)} days`}
-        </span>
-      </div>
-    </div>
-  </div>
-);
-/**
- * Component for displaying an allowance status
- */
-const AllowanceItem = ({
-  label,
-  isSufficient,
-  isLoading,
-}: AllowanceItemProps) => (
-  <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-    <span className="text-sm text-gray-600">{label}</span>
-    <span
-      className={`font-medium ${
-        isSufficient ? "text-green-600" : "text-red-600"
-      }`}
-    >
-      {isLoading ? "..." : isSufficient ? "Sufficient" : "Insufficient"}
-    </span>
-  </div>
-);
