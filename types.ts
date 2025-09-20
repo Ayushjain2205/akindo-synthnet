@@ -141,3 +141,29 @@ export interface StorageCosts {
   pricePerTiBPerMonthNoCDN: bigint;
   pricePerTiBPerMonthWithCDN: bigint;
 }
+
+// Dataset generation types
+export type DatasetType = 'tabular' | 'text' | 'time-series' | 'images';
+
+export interface GenerationRequest {
+  type: DatasetType;
+  prompt: string;
+  size: number;
+  template: string;
+  model: string;
+}
+
+export interface DatasetTemplate {
+  name: string;
+  prompt: string;
+}
+
+export interface LLMModel {
+  id: string;
+  name: string;
+  provider: string;
+  description: string;
+  icon: string;
+  pricing: string;
+  bestFor: DatasetType[];
+}
