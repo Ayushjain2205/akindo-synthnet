@@ -11,7 +11,6 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { Navbar } from "@/components/ui/Navbar";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ConfettiProvider } from "@/providers/ConfettiProvider";
-import Footer from "@/components/ui/Footer";
 import { GeolocationProvider } from "@/providers/GeolocationProvider";
 import { SynapseProvider } from "@/providers/SynapseProvider";
 import { Space_Grotesk, Manrope } from "next/font/google";
@@ -78,7 +77,6 @@ export default function RootLayout({
                         <Navbar />
                         {children}
                       </main>
-                      <Footer />
                     </SynapseProvider>
                   </RainbowKitProvider>
                 </WagmiProvider>
