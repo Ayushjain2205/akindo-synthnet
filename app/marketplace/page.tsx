@@ -1,52 +1,86 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Search, Filter, Download, Eye, Star, Clock, TrendingUp, Users, Zap, Grid, List } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
-import { Card, CardHeader, CardContent } from '../../components/ui/Card';
-import { mockDatasets } from '../../utils/mockData';
-import { Dataset } from '../../types';
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  Search,
+  Filter,
+  Download,
+  Eye,
+  Star,
+  Clock,
+  TrendingUp,
+  Users,
+  Zap,
+  Grid,
+  List,
+} from "lucide-react";
+import { Button } from "../../components/ui/Button";
+import { Card, CardHeader, CardContent } from "../../components/ui/Card";
+import { mockDatasets } from "../../utils/mockData";
+import { Dataset } from "../../types";
 
 export default function MarketplacePage() {
   const [datasets] = useState<Dataset[]>(mockDatasets);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const filteredDatasets = datasets.filter(dataset => {
-    const matchesSearch = dataset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         dataset.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         dataset.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesFilter = selectedFilter === 'all' || dataset.type === selectedFilter;
-    return matchesSearch && matchesFilter;
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case 'price-low': return (a.price || 0) - (b.price || 0);
-      case 'price-high': return (b.price || 0) - (a.price || 0);
-      case 'size': return b.size - a.size;
-      default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-  });
+  const filteredDatasets = datasets
+    .filter((dataset) => {
+      const matchesSearch =
+        dataset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dataset.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dataset.tags.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      const matchesFilter =
+        selectedFilter === "all" || dataset.type === selectedFilter;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return (a.price || 0) - (b.price || 0);
+        case "price-high":
+          return (b.price || 0) - (a.price || 0);
+        case "size":
+          return b.size - a.size;
+        default:
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+      }
+    });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'tabular': return '📊';
-      case 'text': return '📝';
-      case 'time-series': return '📈';
-      case 'images': return '🖼️';
-      default: return '📄';
+      case "tabular":
+        return "📊";
+      case "text":
+        return "📝";
+      case "time-series":
+        return "📈";
+      case "images":
+        return "🖼️";
+      default:
+        return "📄";
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'tabular': return 'bg-teal-100 text-teal-800 border-teal-200';
-      case 'text': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'time-series': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'images': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case "tabular":
+        return "bg-teal-100 text-teal-800 border-teal-200";
+      case "text":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "time-series":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "images":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -62,7 +96,7 @@ export default function MarketplacePage() {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
               Discover high-quality synthetic datasets for your AI projects
             </p>
-            
+
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
               <div className="relative">
@@ -112,21 +146,26 @@ export default function MarketplacePage() {
 
           <div className="flex items-center justify-between">
             <p className="text-gray-600 mr-6">
-              <span className="font-semibold">{filteredDatasets.length}</span> datasets found
+              <span className="font-semibold">{filteredDatasets.length}</span>{" "}
+              datasets found
             </p>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'grid' ? 'bg-teal-100 text-teal-600' : 'text-gray-400 hover:text-gray-600'
+                  viewMode === "grid"
+                    ? "bg-teal-100 text-teal-600"
+                    : "text-gray-400 hover:text-gray-600"
                 }`}
               >
                 <Grid className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setViewMode("list")}
                 className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list' ? 'bg-teal-100 text-teal-600' : 'text-gray-400 hover:text-gray-600'
+                  viewMode === "list"
+                    ? "bg-teal-100 text-teal-600"
+                    : "text-gray-400 hover:text-gray-600"
                 }`}
               >
                 <List className="w-5 h-5" />
@@ -137,17 +176,20 @@ export default function MarketplacePage() {
 
         {/* Dataset Grid */}
         {filteredDatasets.length > 0 ? (
-          <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "space-y-4"
+            }
+          >
             {filteredDatasets.map((dataset) => (
               <Link
-                key={dataset.id} 
+                key={dataset.id}
                 href={`/dataset/${dataset.id}`}
                 className="block"
               >
-                <Card 
-                  hover 
-                  className="group cursor-pointer h-full"
-                >
+                <Card hover className="group cursor-pointer h-full">
                   <CardHeader>
                     <div className="mb-4">
                       <div className="flex items-center space-x-3 mb-3">
@@ -158,7 +200,11 @@ export default function MarketplacePage() {
                           <h3 className="text-lg font-semibold text-gray-900 leading-tight mb-1">
                             {dataset.name}
                           </h3>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getTypeColor(dataset.type)}`}>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getTypeColor(
+                              dataset.type
+                            )}`}
+                          >
                             {dataset.type}
                           </span>
                         </div>
@@ -171,8 +217,11 @@ export default function MarketplacePage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex flex-wrap gap-1">
-                        {dataset.tags.slice(0, 3).map(tag => (
-                          <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium">
+                        {dataset.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium"
+                          >
                             #{tag}
                           </span>
                         ))}
@@ -182,7 +231,7 @@ export default function MarketplacePage() {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="pt-3 border-t border-gray-100">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-2">
@@ -192,14 +241,21 @@ export default function MarketplacePage() {
                               </span>
                             </div>
                             <span className="text-xs text-gray-500 font-medium">
-                              {dataset.author.slice(0, 6)}...{dataset.author.slice(-4)}
+                              {dataset.author.slice(0, 6)}...
+                              {dataset.author.slice(-4)}
                             </span>
                           </div>
-                          <span className="text-xs text-gray-400">{dataset.createdAt}</span>
+                          <span className="text-xs text-gray-400">
+                            {dataset.createdAt}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="text-lg font-bold text-teal-600">{dataset.price} FIL</div>
-                          <div className="text-sm text-gray-500 font-medium">{dataset.size.toLocaleString()} rows</div>
+                          <div className="text-lg font-bold text-teal-600">
+                            {dataset.price} USDFC
+                          </div>
+                          <div className="text-sm text-gray-500 font-medium">
+                            {dataset.size.toLocaleString()} rows
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -212,11 +268,19 @@ export default function MarketplacePage() {
           <Card>
             <CardContent className="p-16 text-center">
               <div className="text-6xl mb-6">🔍</div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">No datasets found</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                No datasets found
+              </h3>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                Try adjusting your search terms or filters to discover the perfect dataset for your project.
+                Try adjusting your search terms or filters to discover the
+                perfect dataset for your project.
               </p>
-              <Button onClick={() => { setSearchTerm(''); setSelectedFilter('all'); }}>
+              <Button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedFilter("all");
+                }}
+              >
                 Clear All Filters
               </Button>
             </CardContent>

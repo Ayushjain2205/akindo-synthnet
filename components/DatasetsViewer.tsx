@@ -98,8 +98,8 @@ const DatasetCard = ({ dataset }: { dataset: DataSet }) => {
       {/* Expanded Details */}
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-          {/* Quick Stats */}
-          <div className="flex flex-wrap gap-4 text-sm">
+          {/* Quick Stats - Hidden as requested */}
+          {/* <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-1">
               <span className="text-gray-500">Commission:</span>
               <span className="font-medium">
@@ -124,7 +124,7 @@ const DatasetCard = ({ dataset }: { dataset: DataSet }) => {
                 </span>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* PDP URL */}
           {dataset.provider?.products.PDP?.data.serviceURL && (

@@ -22,8 +22,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Generate AI-ready data with prompts. Store on Filecoin. Share
-              globally.
+              AI-ready data you can create, verify, and share.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/generate">
